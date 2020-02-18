@@ -260,6 +260,8 @@ def open_port(openport=-1):
         if is_centos8:
             os.system(firewall_open_cmd.format(port_str, port_str))
         else:
+            if len(os.popen(check_cmd.format(iptable_way, port_str)).readlines()) > 0:
+                return
             os.system(input_cmd.format(iptable_way, "tcp", port_str))
             os.system(input_cmd.format(iptable_way, "udp", port_str))
             os.system(output_cmd.format(iptable_way, "tcp", port_str))
@@ -267,11 +269,11 @@ def open_port(openport=-1):
     else:
         for port in port_set:
             port_str = str(port)
-            if len(os.popen(check_cmd.format(iptable_way, port_str)).readlines()) > 0:
-                continue
             if is_centos8:
                 os.system(firewall_open_cmd.format(port_str, port_str))
             else:
+                if len(os.popen(check_cmd.format(iptable_way, port_str)).readlines()) > 0:
+                    continue
                 os.system(input_cmd.format(iptable_way, "tcp", port_str))
                 os.system(input_cmd.format(iptable_way, "udp", port_str))
                 os.system(output_cmd.format(iptable_way, "tcp", port_str))
