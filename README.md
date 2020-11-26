@@ -55,6 +55,7 @@ V2ray多用户管理脚本，向导式管理[新增|删除|修改]传输协议�
   - Shadowsocks
   - Quic
   - VLESS
+  - VLESS_WS
   - VLESS_XTLS
   - Trojan
 
@@ -84,6 +85,7 @@ v2ray [-h|--help] [options]
     status               查看 V2Ray 运行状态
     new                  重建新的v2ray json配置文件
     update               更新 V2Ray 到最新Release版本
+    update [version]     更新 V2Ray 到指定版本
     update.sh            更新 multi-v2ray 到最新版本
     add                  新增mkcp + 随机一种 (srtp|wechat-video|utp|dtls|wireguard) header伪装的端口(Group)
     add [wechat|utp|srtp|dtls|wireguard|socks|mtproto|ss]     新增一种协议的组，端口随机,如 v2ray add utp 为新增utp协议
