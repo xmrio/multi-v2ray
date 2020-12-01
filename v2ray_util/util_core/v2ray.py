@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
+import sys
 import uuid
 import time
 import subprocess
@@ -85,7 +86,7 @@ class V2ray:
         if is_ipv6(get_ip()):
             print(ColorStr.yellow(_("ipv6 network not support update v2ray online, please manual donwload v2ray to update!")))
             print(ColorStr.fuchsia(_("download v2ray-linux-xx.zip and run 'bash <(curl -L -s https://multi.netlify.app/go.sh) -l v2ray-linux-xx.zip' to update")))
-            return
+            sys.exit(0)
         if os.path.exists("/.dockerenv"):
             V2ray.stop()
         subprocess.Popen("curl -Ls https://multi.netlify.app/go.sh -o temp.sh", shell=True).wait()
@@ -101,11 +102,14 @@ class V2ray:
         print("")
 
     @staticmethod
-    def log():
-        f = subprocess.Popen(['tail','-f', '-n', '100', '/var/log/v2ray/access.log'],
+    def log(error_log=False):
+        f = subprocess.Popen(['tail','-f', '-n', '100', '/var/log/v2ray/{}.log'.format("error" if error_log else "access")],
                 stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        while True:
-            print(bytes.decode(f.stdout.readline().strip()))
+        try:
+            while True:
+                print(bytes.decode(f.stdout.readline().strip()))
+        except BaseException:
+            print()
 
     @classmethod
     def restart(cls):
@@ -130,20 +134,12 @@ class V2ray:
             cls.run("systemctl stop v2ray", "stop")
 
     @classmethod
-    def convert(cls):
-        from .converter import ConfigConverter
-
-    @classmethod
     def check(cls):
         if not os.path.exists("/etc/v2ray_util/util.cfg"):
             subprocess.call("mkdir -p /etc/v2ray_util && cp -f {} /etc/v2ray_util/".format(pkg_resources.resource_filename(__name__, 'util.cfg')), shell=True)
         if not os.path.exists("/usr/bin/v2ray/v2ray"):
             print(ColorStr.yellow(_("check v2ray no install, auto install v2ray..")))
-            if is_ipv6(get_ip()):
-                subprocess.Popen("curl -Ls https://multi.netlify.app/go.sh -o temp.sh", shell=True).wait()
-                subprocess.Popen("bash temp.sh --source jsdelivr && rm -f temp.sh", shell=True).wait()
-            else:
-                cls.update()
+            cls.update()
             cls.new()
 
     @classmethod
