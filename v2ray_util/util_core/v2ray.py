@@ -86,7 +86,10 @@ class V2ray:
     def update(version=None):
         if is_ipv6(get_ip()):
             print(ColorStr.yellow(_("ipv6 network not support update {soft} online, please manual donwload {soft} to update!".format(soft=run_type))))
-            print(ColorStr.fuchsia(_("download {soft}-linux-xx.zip and run 'bash <(curl -L -s https://multi.netlify.app/go.sh) -l {soft}-linux-xx.zip' to update".format(soft=run_type))))
+            if run_type == "xray":
+                print(ColorStr.fuchsia(_("download Xray-linux-xx.zip and run 'bash <(curl -L -s https://multi.netlify.app/go.sh) -l Xray-linux-xx.zip -x' to update")))
+            else:
+                print(ColorStr.fuchsia(_("download v2ray-linux-xx.zip and run 'bash <(curl -L -s https://multi.netlify.app/go.sh) -l v2ray-linux-xx.zip' to update")))
             sys.exit(0)
         if os.path.exists("/.dockerenv"):
             V2ray.stop()
@@ -130,7 +133,7 @@ class V2ray:
     @classmethod
     def stop(cls):
         if os.path.exists("/.dockerenv"):
-            cls.docker_run('''ps aux|grep "/usr/bin/{bin}/{bin}"|awk '{print $1}'|xargs  -r kill -9 2>/dev/null'''.format(bin=run_type), "stop")
+            cls.docker_run("ps aux|grep /usr/bin/{bin}/{bin}".format(bin=run_type) + "|awk '{print $1}'|xargs  -r kill -9 2>/dev/null", "stop")
         else:
             cls.run("systemctl stop {}".format(run_type), "stop")
 
@@ -142,6 +145,17 @@ class V2ray:
             print(ColorStr.yellow(_("check {soft} no install, auto install {soft}..".format(soft=run_type))))
             cls.update()
             cls.new()
+
+    @classmethod
+    def remove(cls):
+        if os.path.exists("/.dockerenv"):
+            print(ColorStr.yellow("docker run don't support remove {}!".format(run_type)))
+            return
+        cls.stop()
+        subprocess.call("systemctl disable {}.service".format(run_type), shell=True)
+        subprocess.call("rm -rf /usr/bin/{bin} /etc/systemd/system/{bin}.service".format(bin=run_type), shell=True)
+        print(ColorStr.green("Removed {} successfully.".format(run_type)))
+        print(ColorStr.blue("If necessary, please remove configuration file and log file manually."))
 
     @classmethod
     def new(cls):
